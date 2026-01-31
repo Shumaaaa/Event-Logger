@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Match Event Logger</title>
+
+<style>
+body {
+  background:#0e0e0e;
+  color:#fff;
+  font-family:Arial;
+  margin:0;
+  padding:10;
+}
+
+main {
+  background-image: url('Football.jpg');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+
+  
+  max-width: 100%;
+  padding: 16px;
+  box-sizing: border-box;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  flex-direction: column;
+
+  color:#fff;
+  font-family:Arial;
+  margin:0;
+  padding:20px;
+
+  border-radius: 8px;
+}
+
+/* Sticky header for Teams / Timer / Score */
+#matchHeader {
+  position: sticky;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 50%;
+  background: rgba(14,14,14,0.95);
+  z-index: 10;
+  display:flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 0;
+  text-align: center;
+  border-bottom: 1px solid #333;
+
+  border-radius: 8px;
+}
+
+button,input {
+  padding:12px 18px;
+  margin:6px;
+  background:#222;
+  color:#fff;
+  border:1px solid #444;
+
+  border-radius: 8px;
+}
+
+button:disabled {
+  opacity:.35;
+  cursor:not-allowed;
+
+  border-radius: 8px;
+}
+
+button:hover:not(:disabled) { background:#333 }
+
+.panel { margin-bottom:18px }
+
+#output button {
+  width:100%;
+  text-align:left;
+  background:#000;
+  color:rgb(253, 253, 253);
+  font-family:monospace;
+
+  border-radius: 8px;
+}
+
+.grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(130px,1fr));
+  gap:8px;
+}
+
+.modal {
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.92);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:10;
+
+  border-radius: 8px;
+}
+
+.modal-box {
+  background:#1a1a1a;
+  padding:24px;
+  min-width:320px;
+  text-align:center;
+  border:1px solid #333;
+
+  border-radius: 8px;
+}
+
+.hidden { display:none }
+
+</style>
+
+<main>
+
+<!-- Sticky Header -->
+<div id="matchHeader">
+  <button id="setTeamsBtn" onclick="openTeamModal()">Set Teams</button>
+  <div id="timerContainer"><strong>Timer:</strong> <span id="clock">00:00</span></div>
+  <div id="scoreContainer"><strong>Score:</strong> <span id="score">0 - 0</span></div>
+</div>
+
+<!-- TEAM MODAL -->
+<div id="teamModal" class="modal hidden">
+  <div class="modal-box">
+    <h3>Enter Teams</h3>
+    <input id="home" placeholder="Home Team"><br>
+    <input id="away" placeholder="Away Team"><br><br>
+    <button onclick="confirmTeams()">OK</button>
+  </div>
+</div>
+
+<!-- META MODAL -->
+<div id="metaModal" class="modal hidden">
+  <div class="modal-box">
+    <h3>Match Details</h3>
+    <input id="venue" placeholder="Venue"><br>
+    <input id="attendance" placeholder="Attendance"><br>
+    <input id="matchDate" type="datetime-local"><br><br>
+    <button onclick="confirmMeta()">Confirm</button>
+  </div>
+</div>
+
+<!-- KO MODAL -->
+<div id="koModal" class="modal hidden">
+  <div class="modal-box">
+    <h3>Kick-Off Minute</h3>
+    <button onclick="startKO(0)">0'</button>
+    <button onclick="startKO(45)">45'</button>
+  </div>
+</div>
+
+<!-- TEAM PICKER -->
+<div id="teamPicker" class="modal hidden">
+  <div class="modal-box">
+    <h3>Select Team</h3>
+    <button id="homeBtn"></button>
+    <button id="awayBtn"></button>
+  </div>
+</div>
+
+<!-- EVENT MODAL -->
+<div id="eventModal" class="modal hidden">
+  <div class="modal-box">
+    <h3 id="eventTitle"></h3>
+    <input id="shirtInput" placeholder=""><br>
+    <button onclick="confirmEvent()">Confirm</button>
+  </div>
+</div>
+
+<!-- Controls -->
+<div class="panel">
+  <button id="koBtn" onclick="KO()" disabled>KO</button>
+  <button id="htBtn" onclick="HT()" disabled>HT</button>
+  <button id="ftBtn" onclick="FT()" disabled>FT</button>
+</div>
+
+<div class="panel">
+  <strong>Events</strong>
+  <div class="grid">
+    <button class="eventBtn" onclick="goal()" disabled>[G] Goal</button>
+    <button class="eventBtn" onclick="yellow()" disabled>[YC] Yellow</button>
+    <button class="eventBtn" onclick="red()" disabled>[RC] Red</button>
+  </div>
+</div>
+
+<div class="panel">
+  <strong>Generated Codes</strong>
+  <div id="output"></div>
+</div>
+
+</main>
+
+
+<script>
+let HOME, AWAY
+let venueValue, attendanceValue, matchDateValue
+let homeScore = 0, awayScore = 0
+let running = false
+let startTime = 0
+let elapsed = 0
+let locked = true
+let teamCallback = null
+let eventCallback = null
+let eventsLog = []
+let half = 0   // 0 = not started, 1 = first half, 2 = second half, 3 = finished
+
+window.addEventListener("beforeunload", e => {
+  if (locked) {
+    e.preventDefault()
+    e.returnValue = ""
+  }
+})
+
+function openTeamModal() { teamModal.classList.remove("hidden") }
+
+function confirmTeams() {
+  HOME = home.value.trim()
+  AWAY = away.value.trim()
+  if (!HOME || !AWAY) return
+  teamModal.classList.add("hidden")
+  metaModal.classList.remove("hidden")
+
+  // Update button with team names
+  const btn = document.getElementById("setTeamsBtn")
+  btn.textContent = `${HOME} - ${AWAY}`
+  btn.disabled = true
+}
+
+function confirmMeta() {
+  venueValue = document.getElementById("venue").value
+  attendanceValue = document.getElementById("attendance").value
+  matchDateValue = document.getElementById("matchDate").value
+  metaModal.classList.add("hidden")
+  koBtn.disabled = false
+}
+
+function KO() {
+  if (running) return
+  if (half === 3) return alert("Match already finished")
+  koModal.classList.remove("hidden")
+}
+
+function startKO(min) {
+  koModal.classList.add("hidden")
+  elapsed = min * 60000
+  startTime = performance.now() - elapsed
+  running = true
+
+  if (half === 0) half = 1
+  if (half === 2) half = 2
+
+  koBtn.disabled = true
+  htBtn.disabled = false
+  ftBtn.disabled = false
+  document.querySelectorAll(".eventBtn").forEach(b => b.disabled = false)
+  tick()
+}
+
+function HT() {
+  if (minuteRaw() < 45) return alert("HT available after 45 minutes")
+  if (!running) return alert("KO must be clicked first")
+  running = false
+  half = 2
+  koBtn.disabled = false
+}
+
+function FT() {
+  if (minuteRaw() < 90) return alert("FT available after 90 minutes")
+  if (!running) return alert("KO must be clicked first")
+  running = false
+  locked = false
+  half = 3
+  koBtn.disabled = true
+  generateReport()
+  alert("Full Time. Report generated.")
+}
+
+function minuteRaw() { return Math.floor(elapsed / 60000) }
+
+function tick() {
+  if (!running) return
+  elapsed = performance.now() - startTime
+  clock.textContent = formatTime(elapsed)
+  requestAnimationFrame(tick)
+}
+
+function formatTime(ms) {
+  const m = Math.floor(ms / 60000)
+  const s = Math.floor(ms / 1000) % 60
+  return `${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`
+}
+
+function minute() {
+  const totalMinutes = Math.floor(elapsed / 60000)
+  if (totalMinutes >= 45 && totalMinutes < 60) {
+    const extra = totalMinutes - 45
+    return extra > 0 ? `45+${extra}'` : "45'"
+  }
+  if (totalMinutes >= 90) {
+    const extra = totalMinutes - 90
+    return extra > 0 ? `90+${extra}'` : "90'"
+  }
+  return `${totalMinutes + 1}'`
+}
+
+/* TEAM PICKER */
+function selectTeam(cb) {
+  teamCallback = cb
+  homeBtn.textContent = HOME
+  awayBtn.textContent = AWAY
+  teamPicker.classList.remove("hidden")
+}
+
+homeBtn.onclick = () => pick(HOME)
+awayBtn.onclick = () => pick(AWAY)
+
+function pick(team) {
+  teamPicker.classList.add("hidden")
+  teamCallback(team)
+}
+
+/* EVENT MODAL */
+function openEvent(title, placeholder, cb) {
+  eventTitle.textContent = title
+  shirtInput.placeholder = placeholder
+  shirtInput.value = ""
+  eventCallback = cb
+  eventModal.classList.remove("hidden")
+}
+
+function confirmEvent() {
+  const val = shirtInput.value.trim()
+  if (!val) return
+  eventModal.classList.add("hidden")
+  eventCallback(val)
+}
+
+/* OUTPUT */
+function emit(code) {
+  eventsLog.push(code)
+  const b = document.createElement("button")
+  b.textContent = code
+  b.onclick = () => navigator.clipboard.writeText(code)
+  output.appendChild(b)
+}
+
+/* GOAL + ASSIST */
+function goal() {
+  selectTeam(team => {
+    openEvent("Goal Scorer", "Scorer Shirt #", scorer => {
+      team === HOME ? homeScore++ : awayScore++
+      score.textContent = `${homeScore} - ${awayScore}`
+      const g = `G – ${team} – ${scorer} – ${minute()} – S:${homeScore}-${awayScore}`
+      emit(g)
+      if (confirm("Was there an assist?")) {
+        openEvent("Assist", "Assist Shirt #", assist => {
+          emit(`A – ${team} – ${assist} – ${minute()}`)
+        })
+      }
+    })
+  })
+}
+
+function yellow() {
+  selectTeam(team => {
+    openEvent("Yellow Card", "Shirt #", shirt => {
+      emit(`YC – ${team} – ${shirt} – ${minute()}`)
+    })
+  })
+}
+
+function red() {
+  selectTeam(team => {
+    openEvent("Red Card", "Shirt #", shirt => {
+      emit(`RC – ${team} – ${shirt} – ${minute()}`)
+    })
+  })
+}
+
+/* REPORT */
+function generateReport() {
+  const lines = [
+    "MATCH REPORT",
+    "====================",
+    `Date: ${matchDateValue}`,
+    `Venue: ${venueValue}`,
+    `Attendance: ${attendanceValue}`,
+    "",
+    `${HOME} ${homeScore} - ${awayScore} ${AWAY}`,
+    "",
+    "EVENT LOG:",
+    ...eventsLog
+  ]
+  const blob = new Blob([lines.join("\n")], { type:"text/plain" })
+  const a = document.createElement("a")
+  a.href = URL.createObjectURL(blob)
+  a.download = `${HOME}_vs_${AWAY}.txt`
+  a.click()
+}
+</script>
+
+</main>
+</body>
+</html>
