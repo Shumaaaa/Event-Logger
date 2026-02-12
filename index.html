@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Live Correspondent</title>
+
+<style>
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body, html {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  margin: 0;
+  background: #0e0e0e;
+  color: #fff;
+  font-family: Arial, sans-serif;
+  position: relative;
+}
+
+/* Animated gradient background that fits all devices */
+.animated-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+  background-size: 400% 400%;
+  animation: gradientShift 15s ease infinite;
+  z-index: 0;
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Floating particles effect */
+.particles {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.particle {
+  position: absolute;
+  background: rgba(78, 204, 163, 0.3);
+  border-radius: 50%;
+  animation: float 20s infinite ease-in-out;
+}
+
+.particle:nth-child(1) {
+  width: 80px;
+  height: 80px;
+  left: 10%;
+  animation-delay: 0s;
+  animation-duration: 15s;
+}
+
+.particle:nth-child(2) {
+  width: 60px;
+  height: 60px;
+  left: 80%;
+  animation-delay: 2s;
+  animation-duration: 18s;
+}
+
+.particle:nth-child(3) {
+  width: 100px;
+  height: 100px;
+  left: 50%;
+  animation-delay: 4s;
+  animation-duration: 20s;
+}
+
+.particle:nth-child(4) {
+  width: 40px;
+  height: 40px;
+  left: 30%;
+  animation-delay: 6s;
+  animation-duration: 16s;
+}
+
+.particle:nth-child(5) {
+  width: 70px;
+  height: 70px;
+  left: 70%;
+  animation-delay: 3s;
+  animation-duration: 17s;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(100vh) translateX(0) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.3;
+  }
+  90% {
+    opacity: 0.3;
+  }
+  50% {
+    transform: translateY(-20vh) translateX(100px) rotate(180deg);
+    opacity: 0.5;
+  }
+}
+
+/* Main content container */
+main {
+  position: relative;
+  z-index: 10;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+/* Logo container with animation */
+.logo-container {
+  text-align: center;
+  animation: fadeInBounce 1.2s ease-out;
+}
+
+@keyframes fadeInBounce {
+  0% {
+    opacity: 0;
+    transform: scale(0.3) translateY(-50px);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.logo {
+  font-size: 80px;
+  margin-bottom: 20px;
+  text-shadow: 0 0 30px rgba(78, 204, 163, 0.8);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+h1 {
+  font-size: 48px;
+  color: #4ecca3;
+  margin-bottom: 15px;
+  font-weight: bold;
+  text-shadow: 0 4px 20px rgba(78, 204, 163, 0.5);
+  letter-spacing: 2px;
+  animation: slideInLeft 0.8s ease-out 0.3s backwards;
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-100px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.tagline {
+  font-size: 18px;
+  color: #aaa;
+  font-style: italic;
+  margin-bottom: 10px;
+  animation: slideInRight 0.8s ease-out 0.5s backwards;
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(100px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.version {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 50px;
+  animation: fadeIn 1s ease-out 0.8s backwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Animated start button */
+.start-btn {
+  padding: 20px 50px;
+  font-size: 24px;
+  font-weight: bold;
+  color: #000;
+  background: linear-gradient(135deg, #4ecca3 0%, #3da88a 100%);
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  box-shadow: 0 10px 40px rgba(78, 204, 163, 0.6);
+  transition: all 0.4s ease;
+  animation: fadeInUp 1s ease-out 1s backwards, buttonPulse 2s ease-in-out 2s infinite;
+  position: relative;
+  overflow: hidden;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes buttonPulse {
+  0%, 100% {
+    box-shadow: 0 10px 40px rgba(78, 204, 163, 0.6);
+  }
+  50% {
+    box-shadow: 0 10px 60px rgba(78, 204, 163, 0.9);
+  }
+}
+
+.start-btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.start-btn:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+.start-btn:hover {
+  transform: translateY(-5px) scale(1.05);
+  box-shadow: 0 15px 50px rgba(78, 204, 163, 0.8);
+}
+
+.start-btn:active {
+  transform: translateY(-2px) scale(1.02);
+}
+
+.start-btn span {
+  position: relative;
+  z-index: 1;
+}
+
+/* Quick info text */
+.info-text {
+  margin-top: 40px;
+  text-align: center;
+  animation: fadeIn 1.5s ease-out 1.5s backwards;
+}
+
+.info-text p {
+  color: #888;
+  font-size: 14px;
+  margin: 5px 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  h1 {
+    font-size: 36px;
+  }
+  
+  .logo {
+    font-size: 60px;
+  }
+  
+  .tagline {
+    font-size: 16px;
+  }
+  
+  .start-btn {
+    font-size: 20px;
+    padding: 18px 40px;
+  }
+}
+
+@media (max-width: 400px) {
+  h1 {
+    font-size: 28px;
+  }
+  
+  .logo {
+    font-size: 50px;
+  }
+  
+  .start-btn {
+    font-size: 18px;
+    padding: 15px 35px;
+  }
+}
+
+/* Landscape orientation fix */
+@media (max-height: 500px) {
+  .logo {
+    font-size: 40px;
+    margin-bottom: 10px;
+  }
+  
+  h1 {
+    font-size: 28px;
+    margin-bottom: 8px;
+  }
+  
+  .tagline {
+    font-size: 14px;
+  }
+  
+  .version {
+    margin-bottom: 20px;
+  }
+  
+  .start-btn {
+    padding: 12px 30px;
+    font-size: 18px;
+  }
+  
+  .info-text {
+    margin-top: 20px;
+  }
+}
+</style>
+</head>
+
+<body>
+<!-- Animated background -->
+<div class="animated-bg"></div>
+
+<!-- Floating particles -->
+<div class="particles">
+  <div class="particle"></div>
+  <div class="particle"></div>
+  <div class="particle"></div>
+  <div class="particle"></div>
+  <div class="particle"></div>
+</div>
+
+<main>
+  <div class="logo-container">
+    <div class="logo">📡⚽</div>
+    <h1>LIVE CORRESPONDENT</h1>
+    <p class="tagline">Professional Match Event Tracking</p>
+    <p class="version">Version 2.0</p>
+  </div>
+
+  <a href="home.html" class="start-btn">
+    <span>🚀 ENTER APP</span>
+  </a>
+
+  <div class="info-text">
+    <p>✨ Real-time match logging</p>
+    <p>💾 Automatic match saving</p>
+    <p>📱 Mobile optimized</p>
+  </div>
+</main>
+</body>
+</html>
