@@ -2,148 +2,252 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Match Event Logger</title>
 
 <style>
+* {
+  box-sizing: border-box;
+}
+
 body {
-  background:#0e0e0e;
-  color:#fff;
-  font-family:Arial;
-  margin:0;
-  padding:10;
-  
+  margin: 0;
+  background: #0e0e0e;
+  color: #fff;
+  font-family: Arial, sans-serif;
 }
 
 main {
-  background-image: url('Football.jpg');
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: cover;
-
-  
-  max-width: 100%;
-  padding: 16px;
-  box-sizing: border-box;
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
   min-height: 100vh;
+  padding: 10px;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  display: flex;
   flex-direction: column;
-
-  color:#fff;
-  font-family:Arial;
-  margin:0;
-  padding:20px;
-
-  border-radius: 8px;
+  align-items: center;
+  justify-content: center;
 }
 
-/* Sticky header for Teams / Timer / Score */
+/* ===== STICKY MATCH HEADER ===== */
 #matchHeader {
   position: sticky;
   top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 50%;
-  background: rgba(14,14,14,0.95);
-  z-index: 10;
-  display:flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 10px 0;
+  width: 100%;
+  max-width: 500px;
+  background: rgba(0, 0, 0, 0.95);
+  padding: 12px;
   text-align: center;
-  border-bottom: 1px solid #333;
-
+  border-bottom: 2px solid #333;
+  z-index: 100;
   border-radius: 8px;
+  margin-bottom: 16px;
 }
 
-button,input {
-  padding:12px 18px;
-  margin:6px;
-  background:#222;
-  color:#fff;
-  border:1px solid #444;
+#teams {
+  font-size: 16px;
+  font-weight: bold;
+  color: #4ecca3;
+  min-height: 20px;
+}
 
-  border-radius: 8px;
+#clock {
+  font-size: 24px;
+  margin-top: 6px;
+  color: #fff;
+  font-weight: bold;
+}
+
+#score {
+  font-size: 20px;
+  margin-top: 6px;
+  color: #ffcc00;
+}
+
+#halfIndicator {
+  font-size: 14px;
+  margin-top: 4px;
+  color: #aaa;
+  font-style: italic;
+}
+
+/* ===== CARDS DISPLAY ===== */
+#cardsContainer {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 10px;
+  font-size: 13px;
+  gap: 10px;
+}
+
+.cardsTeam {
+  flex: 1;
+  text-align: center;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  min-height: 50px;
+}
+
+.cardsTeam h4 {
+  margin: 0 0 6px 0;
+  font-size: 12px;
+  color: #4ecca3;
+  text-transform: uppercase;
+}
+
+.cardLine {
+  margin: 4px 0;
+  font-size: 13px;
+}
+
+/* ===== CONTROLS ===== */
+.panel {
+  margin-top: 16px;
+  width: 100%;
+  max-width: 500px;
+}
+
+button, input, select {
+  background: #222;
+  color: #fff;
+  border: 1px solid #444;
+  padding: 12px 16px;
+  margin: 6px;
+  border-radius: 6px;
+  font-size: 14px;
+  min-height: 44px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+button:hover:not(:disabled) {
+  background: #333;
+  border-color: #4ecca3;
+  transform: translateY(-1px);
+}
+
+button:active:not(:disabled) {
+  transform: translateY(0);
 }
 
 button:disabled {
-  opacity:.35;
-  cursor:not-allowed;
-
-  border-radius: 8px;
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
-button:hover:not(:disabled) { background:#333 }
-
-.panel { margin-bottom:18px }
-
-#output button {
-  width:100%;
-  text-align:left;
-  background:#000;
-  color:rgb(253, 253, 253);
-  font-family:monospace;
-
-  border-radius: 8px;
+input, select {
+  width: calc(100% - 12px);
+  cursor: text;
 }
 
 .grid {
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(130px,1fr));
-  gap:8px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
 }
 
-.modal {
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.92);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  z-index:10;
+/* Responsive grid for narrow screens */
+@media (max-width: 400px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
 
-  border-radius: 8px;
+/* ===== OUTPUT ===== */
+#output {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+#output button {
+  width: 100%;
+  text-align: left;
+  font-family: monospace;
+  background: #000;
+  border: 1px solid #333;
+  margin: 4px 0;
+  padding: 10px;
+  font-size: 12px;
+}
+
+#output button:hover {
+  background: #1a1a1a;
+  border-color: #4ecca3;
+}
+
+/* ===== MODALS ===== */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
 }
 
 .modal-box {
-  background:#1a1a1a;
-  padding:24px;
-  min-width:320px;
-  text-align:center;
-  border:1px solid #333;
-
+  background: #1a1a1a;
+  padding: 24px;
+  min-width: 300px;
+  max-width: 90%;
+  border: 1px solid #333;
+  text-align: center;
   border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
 }
 
-.hidden { display:none }
+.modal-box h3 {
+  margin-top: 0;
+  color: #4ecca3;
+}
 
+.modal-box button {
+  margin: 8px 4px;
+}
+
+.hidden {
+  display: none;
+}
+
+/* Desktop improvements */
+@media (min-width: 768px) {
+  #matchHeader, .panel {
+    max-width: 700px;
+  }
+}
 </style>
+</head>
 
+<body>
 <main>
 
-<!-- Sticky Header -->
+<!-- ===== STICKY HEADER ===== -->
 <div id="matchHeader">
   <button id="setTeamsBtn" onclick="openTeamModal()">Set Teams</button>
-  <div id="timerContainer"><strong>Timer:</strong> <span id="clock">00:00</span></div>
-  <div id="scoreContainer"><strong>Score:</strong> <span id="score">0 - 0</span></div>
+  <div id="teams">Click 'Set Teams' to Begin</div>
+  <div id="clock">00:00</div>
+  <div id="score">0 - 0</div>
+  <div id="halfIndicator"></div>
+  <div id="cardsContainer">
+    <div class="cardsTeam" id="cardsHome"></div>
+    <div class="cardsTeam" id="cardsAway"></div>
+  </div>
 </div>
 
-<!-- TEAM MODAL -->
+<!-- ===== MODALS ===== -->
 <div id="teamModal" class="modal hidden">
   <div class="modal-box">
     <h3>Enter Teams</h3>
     <input id="home" placeholder="Home Team"><br>
     <input id="away" placeholder="Away Team"><br><br>
     <button onclick="confirmTeams()">OK</button>
+    <button onclick="closeModal('teamModal')">Cancel</button>
   </div>
 </div>
 
-<!-- META MODAL -->
 <div id="metaModal" class="modal hidden">
   <div class="modal-box">
-    <h3>Match Details</h3>
+    <h3>Match Information</h3>
     <input id="venue" placeholder="Venue"><br>
     <input id="attendance" placeholder="Attendance"><br>
     <input id="matchDate" type="datetime-local"><br><br>
@@ -151,265 +255,544 @@ button:hover:not(:disabled) { background:#333 }
   </div>
 </div>
 
-<!-- KO MODAL -->
 <div id="koModal" class="modal hidden">
   <div class="modal-box">
-    <h3>Kick-Off Minute</h3>
-    <button onclick="startKO(0)">0'</button>
-    <button onclick="startKO(45)">45'</button>
+    <h3>Kick-Off</h3>
+    <button onclick="startKO(0)">Start at 0'</button>
+    <button onclick="startKO(45)">Start at 45'</button>
   </div>
 </div>
 
-<!-- TEAM PICKER -->
 <div id="teamPicker" class="modal hidden">
   <div class="modal-box">
     <h3>Select Team</h3>
     <button id="homeBtn"></button>
     <button id="awayBtn"></button>
+    <button onclick="closeModal('teamPicker')">Cancel</button>
   </div>
 </div>
 
-<!-- EVENT MODAL -->
 <div id="eventModal" class="modal hidden">
   <div class="modal-box">
     <h3 id="eventTitle"></h3>
-    <input id="shirtInput" placeholder=""><br>
+    <input id="eventInput"><br><br>
     <button onclick="confirmEvent()">Confirm</button>
+    <button onclick="closeModal('eventModal')">Cancel</button>
   </div>
 </div>
 
-<!-- Controls -->
+<!-- ===== CONTROLS ===== -->
 <div class="panel">
-  <button id="koBtn" onclick="KO()" disabled>KO</button>
-  <button id="htBtn" onclick="HT()" disabled>HT</button>
-  <button id="ftBtn" onclick="FT()" disabled>FT</button>
+  <button id="koBtn" onclick="KO()" disabled>Kick-Off</button>
+  <button id="htBtn" onclick="HT()" disabled>Half Time</button>
+  <button id="ftBtn" onclick="FT()" disabled>Full Time</button>
 </div>
 
 <div class="panel">
-  <strong>Events</strong>
   <div class="grid">
-    <button class="eventBtn" onclick="goal()" disabled>[G] Goal</button>
-    <button class="eventBtn" onclick="yellow()" disabled>[YC] Yellow</button>
-    <button class="eventBtn" onclick="red()" disabled>[RC] Red</button>
+    <button class="eventBtn" onclick="goal()" disabled>Goal</button>
+    <button class="eventBtn" onclick="yellow()" disabled>Yellow</button>
+    <button class="eventBtn" onclick="red()" disabled>Red</button>
+    <button class="eventBtn" onclick="ownGoal()" disabled>Own Goal</button>
+    <button class="eventBtn" onclick="penaltyGoal()" disabled>Pen Goal</button>
+    <button class="eventBtn" onclick="penaltyMiss()" disabled>Pen Miss</button>
+    <button class="eventBtn" onclick="secondYellow()" disabled>2nd Yellow</button>
+    <button class="eventBtn" onclick="subInOut()" disabled>Substitution</button>
+    <button class="eventBtn" onclick="penaltyGiven()" disabled>Penalty</button>
   </div>
 </div>
 
 <div class="panel">
-  <strong>Generated Codes</strong>
+  <strong>Match Events (Tap to Copy)</strong>
   <div id="output"></div>
 </div>
 
 </main>
 
+<!-- Include jsPDF library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <script>
-let HOME, AWAY
-let venueValue, attendanceValue, matchDateValue
-let homeScore = 0, awayScore = 0
-let running = false
-let startTime = 0
-let elapsed = 0
-let locked = true
-let teamCallback = null
-let eventCallback = null
-let eventsLog = []
-let half = 0   // 0 = not started, 1 = first half, 2 = second half, 3 = finished
+/* ===== STATE ===== */
+let HOME = "", AWAY = "";
+let homeScore = 0, awayScore = 0;
+let startTime = 0, elapsed = 0;
+let running = false;
+let half = 0; // 0: not started, 1: first half, 2: second half, 3: ended
+let locked = true;
+let eventsLog = [];
+let teamCallback, eventCallback;
+
+// Card tracking using maps: { playerName: { yellow: 0/1/2, red: boolean } }
+let cardsHomeMap = {};
+let cardsAwayMap = {};
 
 window.addEventListener("beforeunload", e => {
   if (locked) {
-    e.preventDefault()
-    e.returnValue = ""
+    e.preventDefault();
+    e.returnValue = "";
   }
-})
+});
 
-function openTeamModal() { teamModal.classList.remove("hidden") }
+/* ===== MODAL HELPERS ===== */
+function closeModal(id) {
+  document.getElementById(id).classList.add("hidden");
+}
+
+/* ===== TEAM SETUP ===== */
+function openTeamModal() {
+  teamModal.classList.remove("hidden");
+}
 
 function confirmTeams() {
-  HOME = home.value.trim()
-  AWAY = away.value.trim()
-  if (!HOME || !AWAY) return
-  teamModal.classList.add("hidden")
-  metaModal.classList.remove("hidden")
-
-  // Update button with team names
-  const btn = document.getElementById("setTeamsBtn")
-  btn.textContent = `${HOME} - ${AWAY}`
-  btn.disabled = true
+  HOME = home.value.trim();
+  AWAY = away.value.trim();
+  if (!HOME || !AWAY) {
+    alert("Please enter both team names");
+    return;
+  }
+  closeModal("teamModal");
+  teams.textContent = `${HOME} - ${AWAY}`;
+  setTeamsBtn.textContent = `${HOME} - ${AWAY}`;
+  setTeamsBtn.disabled = true;
+  updateCards();
+  metaModal.classList.remove("hidden");
 }
 
 function confirmMeta() {
-  venueValue = document.getElementById("venue").value
-  attendanceValue = document.getElementById("attendance").value
-  matchDateValue = document.getElementById("matchDate").value
-  metaModal.classList.add("hidden")
-  koBtn.disabled = false
+  closeModal("metaModal");
+  koBtn.disabled = false;
 }
 
+/* ===== TIMER ===== */
 function KO() {
-  if (running) return
-  if (half === 3) return alert("Match already finished")
-  koModal.classList.remove("hidden")
+  if (running || half === 3) return;
+  koModal.classList.remove("hidden");
 }
 
 function startKO(min) {
-  koModal.classList.add("hidden")
-  elapsed = min * 60000
-  startTime = performance.now() - elapsed
-  running = true
-
-  if (half === 0) half = 1
-  if (half === 2) half = 2
-
-  koBtn.disabled = true
-  htBtn.disabled = false
-  ftBtn.disabled = false
-  document.querySelectorAll(".eventBtn").forEach(b => b.disabled = false)
-  tick()
+  closeModal("koModal");
+  elapsed = min * 60000;
+  startTime = performance.now() - elapsed;
+  running = true;
+  half = half === 0 ? 1 : 2;
+  koBtn.disabled = true;
+  htBtn.disabled = false;
+  ftBtn.disabled = false;
+  document.querySelectorAll(".eventBtn").forEach(b => b.disabled = false);
+  updateHalfIndicator();
+  tick();
 }
 
 function HT() {
-  if (minuteRaw() < 45) return alert("HT available after 45 minutes")
-  if (!running) return alert("KO must be clicked first")
-  running = false
-  half = 2
-  koBtn.disabled = false
+  if (minuteRaw() < 45) {
+    alert("Half-time can only be called after 45 minutes");
+    return;
+  }
+  running = false;
+  half = 2;
+  koBtn.disabled = false;
+  htBtn.disabled = true;
+  updateHalfIndicator();
+  emit(`HT – ${minute()}`);
 }
 
 function FT() {
-  if (minuteRaw() < 90) return alert("FT available after 90 minutes")
-  if (!running) return alert("KO must be clicked first")
-  running = false
-  locked = false
-  half = 3
-  koBtn.disabled = true
-  generateReport()
-  alert("Full Time. Report generated.")
+  if (minuteRaw() < 90) {
+    alert("Full-time can only be called after 90 minutes");
+    return;
+  }
+  running = false;
+  half = 3;
+  locked = false;
+  koBtn.disabled = true;
+  htBtn.disabled = true;
+  ftBtn.disabled = true;
+  document.querySelectorAll(".eventBtn").forEach(b => b.disabled = true);
+  updateHalfIndicator();
+  emit(`FT – ${minute()}`);
+  generateReport();
+  alert("Full Time - Match reports generated!");
 }
 
-function minuteRaw() { return Math.floor(elapsed / 60000) }
-
 function tick() {
-  if (!running) return
-  elapsed = performance.now() - startTime
-  clock.textContent = formatTime(elapsed)
-  requestAnimationFrame(tick)
+  if (!running) return;
+  elapsed = performance.now() - startTime;
+  clock.textContent = formatTime(elapsed);
+  requestAnimationFrame(tick);
 }
 
 function formatTime(ms) {
-  const m = Math.floor(ms / 60000)
-  const s = Math.floor(ms / 1000) % 60
-  return `${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`
+  const m = Math.floor(ms / 60000);
+  const s = Math.floor(ms / 1000) % 60;
+  return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+}
+
+function minuteRaw() {
+  return Math.ceil(elapsed / 60000);
 }
 
 function minute() {
-  const totalMinutes = Math.floor(elapsed / 60000)
-  if (totalMinutes >= 45 && totalMinutes < 60) {
-    const extra = totalMinutes - 45
-    return extra > 0 ? `45+${extra}'` : "45'"
-  }
-  if (totalMinutes >= 90) {
-    const extra = totalMinutes - 90
-    return extra > 0 ? `90+${extra}'` : "90'"
-  }
-  return `${totalMinutes + 1}'`
+  const m = minuteRaw();
+  if (m >= 90) return `90+${m - 90}'`;
+  if (m >= 45 && half === 1) return `45+${m - 45}'`;
+  return `${m}'`;
 }
 
-/* TEAM PICKER */
+function updateHalfIndicator() {
+  const indicator = document.getElementById("halfIndicator");
+  if (half === 1) indicator.textContent = "First Half";
+  else if (half === 2) indicator.textContent = "Second Half";
+  else if (half === 3) indicator.textContent = "Match Ended";
+  else indicator.textContent = "";
+}
+
+/* ===== TEAM PICKER ===== */
 function selectTeam(cb) {
-  teamCallback = cb
-  homeBtn.textContent = HOME
-  awayBtn.textContent = AWAY
-  teamPicker.classList.remove("hidden")
+  teamCallback = cb;
+  homeBtn.textContent = HOME;
+  awayBtn.textContent = AWAY;
+  teamPicker.classList.remove("hidden");
 }
 
-homeBtn.onclick = () => pick(HOME)
-awayBtn.onclick = () => pick(AWAY)
+homeBtn.onclick = () => {
+  closeModal("teamPicker");
+  teamCallback(HOME);
+};
 
-function pick(team) {
-  teamPicker.classList.add("hidden")
-  teamCallback(team)
-}
+awayBtn.onclick = () => {
+  closeModal("teamPicker");
+  teamCallback(AWAY);
+};
 
-/* EVENT MODAL */
-function openEvent(title, placeholder, cb) {
-  eventTitle.textContent = title
-  shirtInput.placeholder = placeholder
-  shirtInput.value = ""
-  eventCallback = cb
-  eventModal.classList.remove("hidden")
+/* ===== EVENT INPUT MODAL ===== */
+function openEvent(title, cb) {
+  eventTitle.textContent = title;
+  eventInput.value = "";
+  eventCallback = cb;
+  eventModal.classList.remove("hidden");
 }
 
 function confirmEvent() {
-  const val = shirtInput.value.trim()
-  if (!val) return
-  eventModal.classList.add("hidden")
-  eventCallback(val)
+  const v = eventInput.value.trim();
+  if (!v) {
+    alert("Please enter a value");
+    return;
+  }
+  closeModal("eventModal");
+  eventCallback(v);
 }
 
-/* OUTPUT */
+/* ===== CLIPBOARD HELPER (Android-friendly) ===== */
+async function copyToClipboard(text, button) {
+  const originalText = button.textContent;
+  
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    try {
+      await navigator.clipboard.writeText(text);
+      button.textContent = "✓ Copied!";
+      button.style.background = "#1a4d2e";
+      setTimeout(() => {
+        button.textContent = originalText;
+        button.style.background = "";
+      }, 1500);
+      return;
+    } catch (e) {
+      // Fall through to fallback
+    }
+  }
+
+  // Fallback for older browsers
+  const ta = document.createElement("textarea");
+  ta.value = text;
+  ta.style.position = "fixed";
+  ta.style.top = "-9999px";
+  document.body.appendChild(ta);
+  ta.focus();
+  ta.select();
+  try {
+    document.execCommand("copy");
+    button.textContent = "✓ Copied!";
+    button.style.background = "#1a4d2e";
+    setTimeout(() => {
+      button.textContent = originalText;
+      button.style.background = "";
+    }, 1500);
+  } catch (err) {
+    alert("Copy failed. Please copy manually.");
+  } finally {
+    document.body.removeChild(ta);
+  }
+}
+
+/* ===== OUTPUT ===== */
 function emit(code) {
-  eventsLog.push(code)
-  const b = document.createElement("button")
-  b.textContent = code
-  b.onclick = () => navigator.clipboard.writeText(code)
-  output.appendChild(b)
+  eventsLog.push(code);
+  const b = document.createElement("button");
+  b.textContent = code;
+  b.onclick = () => copyToClipboard(code, b);
+  output.appendChild(b);
 }
 
-/* GOAL + ASSIST */
+/* ===== CARD MANAGEMENT ===== */
+function getCardMap(team) {
+  return team === HOME ? cardsHomeMap : cardsAwayMap;
+}
+
+function updatePlayerCard(team, player, yellowCount, hasRed) {
+  const map = getCardMap(team);
+  map[player] = { yellow: yellowCount, red: hasRed };
+  updateCards();
+}
+
+function updateCards() {
+  // Home team
+  cardsHome.innerHTML = `<h4>${HOME || "Home"}</h4>`;
+  for (let player in cardsHomeMap) {
+    const state = cardsHomeMap[player];
+    const line = renderCardLine(player, state);
+    const div = document.createElement("div");
+    div.className = "cardLine";
+    div.textContent = line;
+    cardsHome.appendChild(div);
+  }
+
+  // Away team
+  cardsAway.innerHTML = `<h4>${AWAY || "Away"}</h4>`;
+  for (let player in cardsAwayMap) {
+    const state = cardsAwayMap[player];
+    const line = renderCardLine(player, state);
+    const div = document.createElement("div");
+    div.className = "cardLine";
+    div.textContent = line;
+    cardsAway.appendChild(div);
+  }
+}
+
+function renderCardLine(player, state) {
+  let icons = "";
+  if (state.yellow === 1 && !state.red) {
+    icons = "🟨";
+  } else if (state.yellow === 2 && state.red) {
+    icons = "🟨🟨 🟥";
+  } else if (state.red && state.yellow === 0) {
+    icons = "🟥";
+  }
+  return `${icons} ${player}`;
+}
+
+/* ===== EVENTS ===== */
 function goal() {
-  selectTeam(team => {
-    openEvent("Goal Scorer", "Scorer Shirt #", scorer => {
-      team === HOME ? homeScore++ : awayScore++
-      score.textContent = `${homeScore} - ${awayScore}`
-      const g = `G – ${team} – ${scorer} – ${minute()} – S:${homeScore}-${awayScore}`
-      emit(g)
-      if (confirm("Was there an assist?")) {
-        openEvent("Assist", "Assist Shirt #", assist => {
-          emit(`A – ${team} – ${assist} – ${minute()}`)
-        })
-      }
-    })
-  })
+  selectTeam(t => {
+    openEvent("Goal Scorer (Name or Number)", s => {
+      if (t === HOME) homeScore++;
+      else awayScore++;
+      score.textContent = `${homeScore} - ${awayScore}`;
+      emit(`G – ${t} – ${s} – ${minute()} – Score: ${homeScore}-${awayScore}`);
+      
+      openEvent("Assist (leave blank if none)", a => {
+        if (a.trim()) emit(`A – ${t} – ${a} – ${minute()}`);
+      });
+    });
+  });
 }
 
 function yellow() {
-  selectTeam(team => {
-    openEvent("Yellow Card", "Shirt #", shirt => {
-      emit(`YC – ${team} – ${shirt} – ${minute()}`)
-    })
-  })
+  selectTeam(t => {
+    openEvent("Yellow Card (Player Name or Number)", s => {
+      const map = getCardMap(t);
+      const current = map[s] || { yellow: 0, red: false };
+      
+      if (current.yellow === 1 && !current.red) {
+        // Second yellow = red card
+        updatePlayerCard(t, s, 2, true);
+        emit(`2YC/RC – ${t} – ${s} – ${minute()}`);
+      } else if (!current.red) {
+        // First yellow
+        updatePlayerCard(t, s, 1, false);
+        emit(`YC – ${t} – ${s} – ${minute()}`);
+      } else {
+        alert("Player already sent off");
+      }
+    });
+  });
 }
 
 function red() {
-  selectTeam(team => {
-    openEvent("Red Card", "Shirt #", shirt => {
-      emit(`RC – ${team} – ${shirt} – ${minute()}`)
-    })
-  })
+  selectTeam(t => {
+    openEvent("Red Card (Player Name or Number)", s => {
+      const map = getCardMap(t);
+      const current = map[s] || { yellow: 0, red: false };
+      
+      if (current.red) {
+        alert("Player already sent off");
+        return;
+      }
+      
+      updatePlayerCard(t, s, current.yellow, true);
+      emit(`RC – ${t} – ${s} – ${minute()}`);
+    });
+  });
 }
 
-/* REPORT */
-function generateReport() {
+function secondYellow() {
+  selectTeam(t => {
+    openEvent("Second Yellow (Player Name or Number)", s => {
+      updatePlayerCard(t, s, 2, true);
+      emit(`2YC/RC – ${t} – ${s} – ${minute()}`);
+    });
+  });
+}
+
+function ownGoal() {
+  selectTeam(t => {
+    openEvent("Own Goal (Player Name or Number)", s => {
+      if (t === HOME) awayScore++;
+      else homeScore++;
+      score.textContent = `${homeScore} - ${awayScore}`;
+      emit(`OG – ${t} – ${s} – ${minute()} – Score: ${homeScore}-${awayScore}`);
+    });
+  });
+}
+
+function penaltyGoal() {
+  selectTeam(t => {
+    openEvent("Penalty Goal (Scorer)", s => {
+      if (t === HOME) homeScore++;
+      else awayScore++;
+      score.textContent = `${homeScore} - ${awayScore}`;
+      emit(`PG – ${t} – ${s} – ${minute()} – Score: ${homeScore}-${awayScore}`);
+    });
+  });
+}
+
+function penaltyMiss() {
+  selectTeam(t => {
+    openEvent("Penalty Miss (Player)", s => {
+      emit(`PM – ${t} – ${s} – ${minute()}`);
+    });
+  });
+}
+
+function penaltyGiven() {
+  selectTeam(t => {
+    emit(`Penalty Awarded – ${t} – ${minute()}`);
+  });
+}
+
+function subInOut() {
+  openEvent("How many substitutions?", countStr => {
+    const count = parseInt(countStr);
+    if (isNaN(count) || count <= 0) {
+      alert("Please enter a valid number");
+      return;
+    }
+    
+    let i = 0;
+    function next() {
+      if (i >= count) return;
+      selectTeam(team => {
+        openEvent(`Sub ${i + 1}: Player OUT (name or number)`, so => {
+          openEvent(`Sub ${i + 1}: Player IN (name or number)`, si => {
+            emit(`SUB – ${team} – OUT: ${so} – IN: ${si} – ${minute()}`);
+            i++;
+            next();
+          });
+        });
+      });
+    }
+    next();
+  });
+}
+
+/* ===== REPORT GENERATION ===== */
+function buildReportText() {
   const lines = [
-    "MATCH REPORT",
-    "====================",
-    `Date: ${matchDateValue}`,
-    `Venue: ${venueValue}`,
-    `Attendance: ${attendanceValue}`,
+    "═══════════════════════════════════════",
+    "           MATCH REPORT",
+    "═══════════════════════════════════════",
     "",
     `${HOME} ${homeScore} - ${awayScore} ${AWAY}`,
     "",
-    "EVENT LOG:",
-    ...eventsLog
-  ]
-  const blob = new Blob([lines.join("\n")], { type:"text/plain" })
-  const a = document.createElement("a")
-  a.href = URL.createObjectURL(blob)
-  a.download = `${HOME}_vs_${AWAY}.txt`
-  a.click()
+    `Date: ${matchDate.value || "Not specified"}`,
+    `Venue: ${venue.value || "Not specified"}`,
+    `Attendance: ${attendance.value || "Not specified"}`,
+    "",
+    "───────────────────────────────────────",
+    "MATCH EVENTS",
+    "───────────────────────────────────────",
+    "",
+    ...eventsLog,
+    "",
+    "═══════════════════════════════════════"
+  ];
+  return lines.join("\n");
+}
+
+function downloadTxtReport() {
+  const txt = buildReportText();
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([txt], { type: "text/plain" }));
+  const safeHome = HOME.replace(/\s+/g, "_");
+  const safeAway = AWAY.replace(/\s+/g, "_");
+  a.download = `${safeHome}_vs_${safeAway}_Report.txt`;
+  a.click();
+}
+
+function downloadPdfReport() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+
+  let y = 20;
+
+  // Title
+  doc.setFontSize(20);
+  doc.setFont("helvetica", "bold");
+  doc.text("MATCH REPORT", 105, y, { align: "center" });
+  y += 15;
+
+  // Match details
+  doc.setFontSize(14);
+  doc.setFont("helvetica", "bold");
+  doc.text(`${HOME} ${homeScore} - ${awayScore} ${AWAY}`, 105, y, { align: "center" });
+  y += 12;
+
+  doc.setFontSize(11);
+  doc.setFont("helvetica", "normal");
+  doc.text(`Date: ${matchDate.value || "Not specified"}`, 20, y);
+  y += 7;
+  doc.text(`Venue: ${venue.value || "Not specified"}`, 20, y);
+  y += 7;
+  doc.text(`Attendance: ${attendance.value || "Not specified"}`, 20, y);
+  y += 12;
+
+  // Events section
+  doc.setFontSize(13);
+  doc.setFont("helvetica", "bold");
+  doc.text("MATCH EVENTS", 20, y);
+  y += 8;
+
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "normal");
+
+  eventsLog.forEach(line => {
+    if (y > 280) {
+      doc.addPage();
+      y = 20;
+    }
+    doc.text(line, 20, y);
+    y += 6;
+  });
+
+  const safeHome = HOME.replace(/\s+/g, "_");
+  const safeAway = AWAY.replace(/\s+/g, "_");
+  doc.save(`${safeHome}_vs_${safeAway}_Report.pdf`);
+}
+
+function generateReport() {
+  downloadTxtReport();
+  setTimeout(() => downloadPdfReport(), 500);
 }
 </script>
-
-</main>
 </body>
 </html>
