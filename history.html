@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Match History - Live Correspondent</title>
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #0e0e0e;
+  color: #fff;
+  font-family: Arial, sans-serif;
+}
+
+main {
+  min-height: 100vh;
+  padding: 20px;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+}
+
+.header {
+  max-width: 800px;
+  margin: 0 auto 30px;
+  text-align: center;
+}
+
+.header h1 {
+  color: #4ecca3;
+  font-size: 32px;
+  margin-bottom: 10px;
+}
+
+.header p {
+  color: #aaa;
+  font-size: 14px;
+}
+
+.nav-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  padding: 12px 20px;
+  font-size: 14px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border: 1px solid #4ecca3;
+}
+
+.btn:hover {
+  background: rgba(78, 204, 163, 0.2);
+  transform: translateY(-2px);
+}
+
+.btn-danger {
+  border-color: #ff4444;
+  color: #ff4444;
+}
+
+.btn-danger:hover {
+  background: rgba(255, 68, 68, 0.2);
+}
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  border: 2px dashed #333;
+}
+
+.empty-state h2 {
+  color: #4ecca3;
+  margin-bottom: 15px;
+}
+
+.empty-state p {
+  color: #aaa;
+  margin-bottom: 25px;
+}
+
+.match-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.match-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid #333;
+  border-radius: 10px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.match-card:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: #4ecca3;
+  transform: translateX(5px);
+}
+
+.match-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.match-teams {
+  font-size: 20px;
+  font-weight: bold;
+  color: #fff;
+}
+
+.match-score {
+  font-size: 24px;
+  color: #ffcc00;
+  font-weight: bold;
+}
+
+.match-info {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  font-size: 13px;
+  color: #aaa;
+  margin-bottom: 15px;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.match-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.btn-small {
+  padding: 8px 15px;
+  font-size: 12px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-view {
+  background: #4ecca3;
+  color: #000;
+  font-weight: bold;
+}
+
+.btn-view:hover {
+  background: #3da88a;
+}
+
+.btn-delete {
+  background: rgba(255, 68, 68, 0.2);
+  color: #ff4444;
+  border: 1px solid #ff4444;
+}
+
+.btn-delete:hover {
+  background: rgba(255, 68, 68, 0.3);
+}
+
+.stats {
+  text-align: center;
+  margin-top: 30px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+}
+
+.stats h3 {
+  color: #4ecca3;
+  margin-bottom: 15px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 15px;
+}
+
+.stat-item {
+  padding: 15px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+}
+
+.stat-value {
+  font-size: 28px;
+  color: #4ecca3;
+  font-weight: bold;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: #aaa;
+  margin-top: 5px;
+}
+
+@media (max-width: 600px) {
+  .header h1 {
+    font-size: 24px;
+  }
+  
+  .match-teams {
+    font-size: 16px;
+  }
+  
+  .match-score {
+    font-size: 20px;
+  }
+}
+</style>
+</head>
+
+<body>
+<main>
+  <div class="header">
+    <h1>📚 Match History</h1>
+    <p>All your logged matches</p>
+  </div>
+
+  <div class="nav-buttons">
+    <a href="index.html" class="btn">🏠 Home</a>
+    <a href="logger.html" class="btn">➕ New Match</a>
+    <button onclick="exportAllData()" class="btn">💾 Export All</button>
+    <button onclick="clearAllMatches()" class="btn btn-danger">🗑️ Clear All</button>
+  </div>
+
+  <div class="container">
+    <div id="matchList"></div>
+    
+    <div id="stats" class="stats" style="display:none;">
+      <h3>📊 Statistics</h3>
+      <div class="stats-grid">
+        <div class="stat-item">
+          <div class="stat-value" id="totalMatches">0</div>
+          <div class="stat-label">Total Matches</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="totalGoals">0</div>
+          <div class="stat-label">Total Goals</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="totalCards">0</div>
+          <div class="stat-label">Total Cards</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+// Load and display all matches
+function loadMatches() {
+  const matches = JSON.parse(localStorage.getItem('liveCorrespondentMatches')) || [];
+  const matchList = document.getElementById('matchList');
+  
+  if (matches.length === 0) {
+    matchList.innerHTML = `
+      <div class="empty-state">
+        <h2>No Matches Yet</h2>
+        <p>Start logging your first match to see it here!</p>
+        <a href="logger.html" class="btn">Start New Match</a>
+      </div>
+    `;
+    return;
+  }
+  
+  // Sort by date (newest first)
+  matches.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+  
+  matchList.innerHTML = '<div class="match-list">' + matches.map((match, index) => {
+    const date = new Date(match.timestamp);
+    const dateStr = date.toLocaleDateString();
+    const timeStr = date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+    
+    return `
+      <div class="match-card" onclick="viewMatch(${index})">
+        <div class="match-header">
+          <div class="match-teams">${match.home} vs ${match.away}</div>
+          <div class="match-score">${match.homeScore} - ${match.awayScore}</div>
+        </div>
+        
+        <div class="match-info">
+          <div class="info-item">📅 ${dateStr}</div>
+          <div class="info-item">🕐 ${timeStr}</div>
+          <div class="info-item">📍 ${match.venue || 'N/A'}</div>
+          <div class="info-item">👥 ${match.attendance || 'N/A'}</div>
+        </div>
+        
+        <div class="match-actions" onclick="event.stopPropagation()">
+          <button class="btn-small btn-view" onclick="viewMatch(${index})">View Details</button>
+          <button class="btn-small btn-delete" onclick="deleteMatch(${index})">Delete</button>
+        </div>
+      </div>
+    `;
+  }).join('') + '</div>';
+  
+  // Show stats
+  document.getElementById('stats').style.display = 'block';
+  updateStats(matches);
+}
+
+function updateStats(matches) {
+  document.getElementById('totalMatches').textContent = matches.length;
+  
+  let totalGoals = 0;
+  let totalCards = 0;
+  
+  matches.forEach(match => {
+    totalGoals += match.homeScore + match.awayScore;
+    match.events.forEach(event => {
+      if (event.includes('YC') || event.includes('RC')) totalCards++;
+    });
+  });
+  
+  document.getElementById('totalGoals').textContent = totalGoals;
+  document.getElementById('totalCards').textContent = totalCards;
+}
+
+function viewMatch(index) {
+  localStorage.setItem('viewMatchIndex', index);
+  window.location.href = 'match-details.html';
+}
+
+function deleteMatch(index) {
+  if (!confirm('Are you sure you want to delete this match?')) return;
+  
+  const matches = JSON.parse(localStorage.getItem('liveCorrespondentMatches')) || [];
+  matches.splice(index, 1);
+  localStorage.setItem('liveCorrespondentMatches', JSON.stringify(matches));
+  loadMatches();
+}
+
+function clearAllMatches() {
+  if (!confirm('⚠️ This will delete ALL matches permanently. Are you sure?')) return;
+  if (!confirm('Really? This cannot be undone!')) return;
+  
+  localStorage.removeItem('liveCorrespondentMatches');
+  loadMatches();
+  alert('All matches have been cleared.');
+}
+
+function exportAllData() {
+  const matches = JSON.parse(localStorage.getItem('liveCorrespondentMatches')) || [];
+  
+  if (matches.length === 0) {
+    alert('No matches to export!');
+    return;
+  }
+  
+  const dataStr = JSON.stringify(matches, null, 2);
+  const blob = new Blob([dataStr], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `LiveCorrespondent_AllMatches_${Date.now()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// Load matches on page load
+window.addEventListener('DOMContentLoaded', loadMatches);
+</script>
+</body>
+</html>
